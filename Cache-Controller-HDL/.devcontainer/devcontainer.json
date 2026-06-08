@@ -1,0 +1,12 @@
+{
+	"name": "Cache Controller HDL",
+	"image": "mcr.microsoft.com/devcontainers/base:trixie",
+	"onCreateCommand": "sudo apt-get update && sudo apt-get install -y iverilog gtkwave && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"mshr-h.VerilogHDL"
+			]
+		}
+	}
+}

@@ -6,6 +6,7 @@ module cache_set #(
     input  clk,
     input  rst_b,
     input  [TAG_SIZE-1:0]  addr_tag,
+    input  [3:0]           word_offset,
     input  [WORD_SIZE-1:0] write_data,
     input  try_read,
     input  try_write,
@@ -42,6 +43,7 @@ module cache_set #(
             cache_line #(.TAG_SIZE(TAG_SIZE), .WORD_SIZE(WORD_SIZE)) line_inst (
                 .clk(clk), .rst_b(rst_b),
                 .addr_tag(addr_tag),
+                .word_offset(word_offset),
                 .write_data(write_data),
                 .write_en      (write_hit_en   & (hit_way == i[1:0]) & hit_valid),
                 .read_alloc_en (read_alloc_en  & (lru_way == i[1:0])),

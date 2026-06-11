@@ -6,6 +6,7 @@ module cache_line #(
     input  clk,
     input  rst_b,
     input  [TAG_SIZE-1:0]  addr_tag,
+    input  [3:0]           word_offset,
     input  [WORD_SIZE-1:0] write_data,
     input  write_en,
     input  read_alloc_en,
@@ -15,8 +16,8 @@ module cache_line #(
     output dirty
 );
     wire alloc_any = read_alloc_en | write_alloc_en;
-
     wire [TAG_SIZE-1:0] tag_stored;
+
     genvar i;
     generate
         for (i = 0; i < TAG_SIZE; i = i + 1) begin : tag_regs
@@ -29,17 +30,23 @@ module cache_line #(
         end
     endgenerate
 
-    wire data_en = write_en | alloc_any;
+    wire [WORD_SIZE-1:0] cache_word_out [0:15];
     generate
-        for (i = 0; i < WORD_SIZE; i = i + 1) begin : data_regs
-            dff data_dff (
-                .clk(clk), .rst_b(rst_b),
-                .en(data_en),
-                .d(write_data[i]),
-                .q(data_out[i])
-            );
+        for (i = 0; i < 16; i = i + 1) begin : words_regs
+            wire data_en = (write_en && (word_offset == i)) | alloc_any;
+            genvar j;
+            for (j = 0; j < WORD_SIZE; j = j + 1) begin : data_bits
+                dff data_dff (
+                    .clk(clk), .rst_b(rst_b),
+                    .en(data_en),
+                    .d(write_data[j]),
+                    .q(cache_word_out[i][j])
+                );
+            end
         end
     endgenerate
+
+    assign data_out = cache_word_out[word_offset];
 
     wire valid;
     dff valid_dff (

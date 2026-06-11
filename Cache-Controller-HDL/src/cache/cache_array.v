@@ -19,12 +19,13 @@ module cache_array #(
     output hit,
     output dirty
 );
-    wire [INDEX_SIZE-1:0] index = address[INDEX_SIZE + 5 : 6];
-    wire [TAG_SIZE-1:0]   tag   = address[ADDR_WIDTH-1 -: TAG_SIZE];
+    wire [INDEX_SIZE-1:0] index       = address[12:6];
+    wire [3:0]            word_offset = address[5:2];
+    wire [TAG_SIZE-1:0]   tag         = address[31:13];
 
-    wire [WORD_SIZE-1:0] set_data  [0:NUM_SETS-1];
-    wire                 set_hit   [0:NUM_SETS-1];
-    wire                 set_dirty [0:NUM_SETS-1];
+    wire [WORD_SIZE-1:0] set_data   [0:NUM_SETS-1];
+    wire                 set_hit    [0:NUM_SETS-1];
+    wire                 set_dirty  [0:NUM_SETS-1];
 
     genvar i;
     generate
@@ -33,6 +34,7 @@ module cache_array #(
             cache_set #(.TAG_SIZE(TAG_SIZE), .WORD_SIZE(WORD_SIZE)) cset (
                 .clk(clk), .rst_b(rst_b),
                 .addr_tag(tag),
+                .word_offset(word_offset),
                 .write_data(write_data),
                 .try_read      (try_read      & active),
                 .try_write     (try_write     & active),
@@ -40,8 +42,8 @@ module cache_array #(
                 .read_alloc_en (read_alloc_en & active),
                 .write_alloc_en(write_alloc_en & active),
                 .data_out (set_data[i]),
-                .hit_way  (),
-                .lru_way  (),
+                .hit_way (),
+                .lru_way (),
                 .hit_miss (set_hit[i]),
                 .dirty_out(set_dirty[i])
             );

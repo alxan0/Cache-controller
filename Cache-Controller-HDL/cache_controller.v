@@ -8,7 +8,7 @@ module cache_controller #(
 )(
     input  clk,
     input  rst_b,
-    input  opcode,
+    input  opcode,                // 0: read, 1: write
     input  [WORD_SIZE-1:0]  data_in,
     input  [ADDR_WIDTH-1:0] address,
     output [WORD_SIZE-1:0]  data_out,
@@ -37,7 +37,7 @@ module cache_controller #(
         .ready(ready)
     );
 
-    cache_array #(
+    cache_array # (
         .ADDR_WIDTH(ADDR_WIDTH), .TAG_SIZE(TAG_SIZE),
         .INDEX_SIZE(INDEX_SIZE), .WORD_SIZE(WORD_SIZE),
         .NUM_SETS(NUM_SETS)

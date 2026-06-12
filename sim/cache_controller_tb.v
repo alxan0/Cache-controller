@@ -149,14 +149,14 @@ module cache_controller_tb;
         $display("  Asteptat: READ HIT cu data noua (0xCAFEBABE)");
         do_op(0, 32'h00000000, 32'h00000080);
 
-        $display("\nTEST 6: Citire la adresa dintr-un alt set");
-        $display("  Asteptat: READ MISS -- setul nu a mai fost accesat");
+        $display("\nTEST 6: Citire la adresa cu tag diferit in acelasi set");
+        $display("  Asteptat: READ MISS -- tag-ul nu este prezent in cache");
         do_op(0, 32'h00000000, 32'h00002010);
 
         $display("\nTEST 7: Umplere completa a unui set + EVICT");
         $display("  4 scrieri (WRITE MISS) umplu toate cele 4 ways");
         $display("  Al 5-lea acces forteaza evacuarea LRU dirty");
-        $display("  Asteptat: RD_MISS -> EVICT -> ALLOCATE");
+        $display("  Asteptat: RD_MISS -> EVICT_RD -> ALLOC_RD");
         do_op(1, 32'hAAAA0000, 32'h00000140);
         do_op(1, 32'hAAAA0001, 32'h00002140);
         do_op(1, 32'hAAAA0002, 32'h00004140);

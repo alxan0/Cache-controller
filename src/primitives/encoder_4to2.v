@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+// Encoder cu prioritate 4:2 -- prioritate catre bitul 0 (cea mai mica cale).
 module encoder_4to2 (
     input  [3:0] in,
     output [1:0] out,

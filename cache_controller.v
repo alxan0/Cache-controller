@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+// Nivel top-level: leaga FSM-ul de tabloul de cache.
 module cache_controller #(
     parameter ADDR_WIDTH = 32,
     parameter TAG_SIZE   = 19,
@@ -18,6 +19,7 @@ module cache_controller #(
     output                  ready
 );
     wire dirty;
+    // opcode 0 = read, 1 = write
     wire op_read  = ~opcode;
     wire op_write =  opcode;
 

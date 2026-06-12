@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+// O cache line: tag (19 biti), 16 words de 32 biti, valid, dirty.
 module cache_line #(
     parameter TAG_SIZE  = 19,
     parameter WORD_SIZE = 32
@@ -15,6 +16,7 @@ module cache_line #(
     output hit,
     output dirty
 );
+    // alloc_any unifica logica comuna celor doua tipuri de alocare
     wire alloc_any = read_alloc_en | write_alloc_en;
 
     reg [TAG_SIZE-1:0]  tag_stored;
@@ -34,7 +36,9 @@ module cache_line #(
             if (alloc_any) begin
                 tag_stored <= addr_tag;
                 valid      <= 1'b1;
+                // dirty se seteaza doar la write-allocate; read-allocate lasa linia clean
                 dirty_r    <= write_alloc_en;
+                // toate words-urile primesc write_data (modeleaza block transfer)
                 for (k = 0; k < 16; k = k + 1)
                     data_mem[k] <= write_data;
             end else if (write_en) begin

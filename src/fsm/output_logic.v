@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+// Iesiri Moore: determinate exclusiv de starea curenta, fara dependenta de intrari.
 module output_logic (
     input  [3:0] current_state,
     input        op_read,
@@ -23,6 +24,7 @@ module output_logic (
                ALLOC_RD   = 4'd7,
                ALLOC_WR   = 4'd8;
 
+    // try_read/try_write: active un singur ciclu in IDLE pentru a initia cautarea in cache
     assign try_read  = (current_state == IDLE) & op_read  & req;
     assign try_write = (current_state == IDLE) & op_write & req;
 
@@ -33,6 +35,7 @@ module output_logic (
     assign read_alloc_en  = (current_state == ALLOC_RD);
     assign write_alloc_en = (current_state == ALLOC_WR);
 
+    // ready: CPU poate prelua rezultatul in ciclul curent
     assign ready = (current_state == READ_HIT)  |
                    (current_state == WRITE_HIT) |
                    (current_state == ALLOC_RD)  |

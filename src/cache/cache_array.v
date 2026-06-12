@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+// Tabloul de cache: NUM_SETS instante cache_set conectate in paralel.
 module cache_array #(
     parameter ADDR_WIDTH  = 32,
     parameter TAG_SIZE    = 19,
@@ -19,6 +20,7 @@ module cache_array #(
     output hit,
     output dirty
 );
+    // Descompunerea adresei: tag[31:13], index[12:6], word_offset[5:2]
     wire [INDEX_SIZE-1:0] index       = address[12:6];
     wire [3:0]            word_offset = address[5:2];
     wire [TAG_SIZE-1:0]   tag         = address[31:13];
@@ -30,6 +32,7 @@ module cache_array #(
     genvar i;
     generate
         for (i = 0; i < NUM_SETS; i = i + 1) begin : cache_sets
+            // active mascheaza semnalele de control: doar setul adresat primeste comenzi
             wire active = (index == i);
             cache_set #(.TAG_SIZE(TAG_SIZE), .WORD_SIZE(WORD_SIZE)) cset (
                 .clk(clk), .rst_b(rst_b),

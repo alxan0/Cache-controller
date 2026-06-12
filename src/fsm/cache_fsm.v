@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+// FSM-ul cacheului: registru de stare + logica de tranzitie + logica de iesire.
 module cache_fsm (
     input  clk,
     input  rst_b,
@@ -35,6 +36,7 @@ module cache_fsm (
         .nxt(next)
     );
 
+    // Iesiri Moore: depind doar de starea curenta
     output_logic out_unit (
         .current_state(current_state),
         .op_read(op_read), .op_write(op_write),

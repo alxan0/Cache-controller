@@ -27,10 +27,12 @@ module next_state (
                 else if (req && op_write && !hit) nxt = WRITE_MISS;
                 else                              nxt = IDLE;
             end
+            // dirty=1 inseamna ca victima LRU trebuie evacuata inainte de alocare
             READ_MISS:  nxt = dirty ? EVICT_RD : ALLOC_RD;
             WRITE_MISS: nxt = dirty ? EVICT_WR : ALLOC_WR;
             EVICT_RD:   nxt = ALLOC_RD;
             EVICT_WR:   nxt = ALLOC_WR;
+            // starile terminale revin in IDLE dupa un singur ciclu
             READ_HIT,
             WRITE_HIT,
             ALLOC_RD,

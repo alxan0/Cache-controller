@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+// Un set cu 4 ways: detecteaza hit-ul, selecteaza victim LRU si ruteaza write-urile per way.
 module cache_set #(
     parameter TAG_SIZE  = 19,
     parameter WORD_SIZE = 32
@@ -27,7 +28,9 @@ module cache_set #(
     encoder_4to2 hit_enc (.in(hit_vec), .out(hit_way), .valid(hit_valid));
     assign hit_miss = hit_valid;
 
+    // LRU se actualizeaza la orice acces valid: hit sau alocare
     wire lru_update = ((try_read | try_write) & hit_valid) | read_alloc_en | write_alloc_en;
+    // La alloc se acceseaza victim LRU; la hit se acceseaza way-ul gasit
     wire [1:0] lru_access = (read_alloc_en | write_alloc_en) ? lru_way : hit_way;
 
     lru_unit lru (
@@ -45,6 +48,7 @@ module cache_set #(
                 .addr_tag(addr_tag),
                 .word_offset(word_offset),
                 .write_data(write_data),
+                // semnalele de write/alloc sunt mascate: un singur way primeste comanda
                 .write_en      (write_hit_en   & (hit_way == i[1:0]) & hit_valid),
                 .read_alloc_en (read_alloc_en  & (lru_way == i[1:0])),
                 .write_alloc_en(write_alloc_en & (lru_way == i[1:0])),
@@ -56,6 +60,7 @@ module cache_set #(
     endgenerate
 
     assign data_out  = data_vec[hit_way];
+    // dirty_out: starea victimei LRU, folosita de FSM pentru decizia EVICT vs ALLOC
     assign dirty_out = dirty_vec[lru_way];
 
 endmodule

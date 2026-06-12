@@ -8,11 +8,12 @@ module cache_controller #(
 )(
     input  clk,
     input  rst_b,
-    input  opcode,                // 0: read, 1: write
+    input  req,
+    input  opcode,
     input  [WORD_SIZE-1:0]  data_in,
     input  [ADDR_WIDTH-1:0] address,
     output [WORD_SIZE-1:0]  data_out,
-    output [2:0]            fsm_state,
+    output [3:0]            fsm_state,
     output                  hit,
     output                  ready
 );
@@ -28,6 +29,7 @@ module cache_controller #(
         .clk(clk), .rst_b(rst_b),
         .hit(hit), .dirty(dirty),
         .op_read(op_read), .op_write(op_write),
+        .req(req),
         .state(fsm_state),
         .try_read(try_read),   .try_write(try_write),
         .mem_read(mem_read),   .mem_write(mem_write),

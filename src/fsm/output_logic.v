@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 module output_logic (
-    input  [2:0] current_state,
+    input  [3:0] current_state,
     input        op_read,
     input        op_write,
-    input        from_write_miss,
+    input        req,
     output try_read,
     output try_write,
     output mem_read,
@@ -13,26 +13,29 @@ module output_logic (
     output write_alloc_en,
     output ready
 );
-    localparam IDLE       = 3'd0,
-               READ_HIT   = 3'd1,
-               READ_MISS  = 3'd2,
-               WRITE_HIT  = 3'd3,
-               WRITE_MISS = 3'd4,
-               EVICT      = 3'd5,
-               ALLOCATE   = 3'd6;
+    localparam IDLE       = 4'd0,
+               READ_HIT   = 4'd1,
+               READ_MISS  = 4'd2,
+               WRITE_HIT  = 4'd3,
+               WRITE_MISS = 4'd4,
+               EVICT_RD   = 4'd5,
+               EVICT_WR   = 4'd6,
+               ALLOC_RD   = 4'd7,
+               ALLOC_WR   = 4'd8;
 
-    assign try_read  = (current_state == IDLE) & op_read;
-    assign try_write = (current_state == IDLE) & op_write;
+    assign try_read  = (current_state == IDLE) & op_read  & req;
+    assign try_write = (current_state == IDLE) & op_write & req;
 
-    assign mem_write = (current_state == EVICT);
-    assign mem_read  = (current_state == ALLOCATE);
+    assign mem_write = (current_state == EVICT_RD) | (current_state == EVICT_WR);
+    assign mem_read  = (current_state == ALLOC_RD) | (current_state == ALLOC_WR);
 
     assign write_hit_en   = (current_state == WRITE_HIT);
-    assign read_alloc_en  = (current_state == ALLOCATE) & ~from_write_miss;
-    assign write_alloc_en = (current_state == ALLOCATE) &  from_write_miss;
+    assign read_alloc_en  = (current_state == ALLOC_RD);
+    assign write_alloc_en = (current_state == ALLOC_WR);
 
     assign ready = (current_state == READ_HIT)  |
                    (current_state == WRITE_HIT) |
-                   (current_state == ALLOCATE);
+                   (current_state == ALLOC_RD)  |
+                   (current_state == ALLOC_WR);
 
 endmodule

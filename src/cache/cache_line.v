@@ -16,53 +16,33 @@ module cache_line #(
     output dirty
 );
     wire alloc_any = read_alloc_en | write_alloc_en;
-    wire [TAG_SIZE-1:0] tag_stored;
 
-    genvar i;
-    generate
-        for (i = 0; i < TAG_SIZE; i = i + 1) begin : tag_regs
-            dff tag_dff (
-                .clk(clk), .rst_b(rst_b),
-                .en(alloc_any),
-                .d(addr_tag[i]),
-                .q(tag_stored[i])
-            );
-        end
-    endgenerate
+    reg [TAG_SIZE-1:0]  tag_stored;
+    reg [WORD_SIZE-1:0] data_mem [0:15];
+    reg                 valid;
+    reg                 dirty_r;
 
-    wire [WORD_SIZE-1:0] cache_word_out [0:15];
-    generate
-        for (i = 0; i < 16; i = i + 1) begin : words_regs
-            wire data_en = (write_en && (word_offset == i)) | alloc_any;
-            genvar j;
-            for (j = 0; j < WORD_SIZE; j = j + 1) begin : data_bits
-                dff data_dff (
-                    .clk(clk), .rst_b(rst_b),
-                    .en(data_en),
-                    .d(write_data[j]),
-                    .q(cache_word_out[i][j])
-                );
+    integer k;
+    always @(posedge clk or negedge rst_b) begin
+        if (!rst_b) begin
+            tag_stored <= 0;
+            valid      <= 1'b0;
+            dirty_r    <= 1'b0;
+            for (k = 0; k < 16; k = k + 1)
+                data_mem[k] <= 0;
+        end else begin
+            if (alloc_any) begin
+                tag_stored <= addr_tag;
+                valid      <= 1'b1;
+                dirty_r    <= write_alloc_en;
+                for (k = 0; k < 16; k = k + 1)
+                    data_mem[k] <= write_data;
+            end else if (write_en) begin
+                data_mem[word_offset] <= write_data;
+                dirty_r               <= 1'b1;
             end
         end
-    endgenerate
-
-    assign data_out = cache_word_out[word_offset];
-
-    wire valid;
-    dff valid_dff (
-        .clk(clk), .rst_b(rst_b),
-        .en(alloc_any),
-        .d(1'b1),
-        .q(valid)
-    );
-
-    wire dirty_next = write_en | write_alloc_en;
-    dff dirty_dff (
-        .clk(clk), .rst_b(rst_b),
-        .en(write_en | alloc_any),
-        .d(dirty_next),
-        .q(dirty)
-    );
+    end
 
     wire tag_match;
     comparator #(.N(TAG_SIZE)) tag_cmp (
@@ -71,6 +51,8 @@ module cache_line #(
         .eq(tag_match)
     );
 
-    assign hit = tag_match & valid;
+    assign data_out = data_mem[word_offset];
+    assign hit      = tag_match & valid;
+    assign dirty    = dirty_r;
 
 endmodule

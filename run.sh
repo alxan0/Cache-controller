@@ -8,7 +8,6 @@ rm -f $OUT_FILE $VCD_FILE
 
 echo "Compiling Verilog sources..."
 iverilog -o $OUT_FILE \
-    src/primitives/dff.v \
     src/primitives/comparator.v \
     src/primitives/encoder_4to2.v \
     src/cache/cache_line.v \
